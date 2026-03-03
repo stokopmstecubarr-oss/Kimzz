@@ -1,0 +1,7 @@
+{
+  "products": [
+    {"name": "UBOT TELEGRAM 1 BULAN", "price": 3000, "stock": 5, "available": true},
+    {"name": "UBOT TELEGRAM PERMANEN", "price": 5000, "stock": 5, "available": true},
+    {"name": "PANEL UNLI", "price": 4000, "stock": 5, "available": true}
+  ]
+}
