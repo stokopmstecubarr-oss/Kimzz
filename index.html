@@ -1,79 +1,63 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KIMZZ PAYMENT</title>
-<style>
-body{font-family:sans-serif;background:#1b1b2f;color:white;padding:20px;}
-.container{max-width:700px;margin:auto;}
-.card{background:#222;padding:20px;border-radius:10px;margin-bottom:15px;}
-button{padding:8px 12px;border:none;border-radius:8px;background:#7c3aed;color:white;cursor:pointer;margin-top:10px;}
-select,input,textarea{width:100%;padding:8px;margin-top:10px;border-radius:6px;border:none;}
-.notif{position:fixed;top:20px;right:20px;background:#7c3aed;padding:10px;border-radius:8px;display:none;}
-.unavailable{opacity:0.5;pointer-events:none;}
-</style>
-</head>
-<body>
-<div class="notif" id="notif">Foto telah dikirim</div>
-<div class="container">
-<h1>KIMZZ PAYMENT</h1>
-
-<div class="card">
-<h2>Pilih Produk</h2>
-<select id="produkSelect"></select>
-</div>
-
+<!-- Bagian Upload Bukti Transfer di card -->
 <div class="card">
 <h2>Upload Bukti Transfer</h2>
 <input type="text" id="namaUserInput" placeholder="Nama Kamu..." required>
+<select id="produkSelect">
+<option value="">-- Pilih Produk --</option>
+<option value="UBOT TELEGRAM 1 BULAN - 3K">UBOT TELEGRAM 1 BULAN HARGA:3K</option>
+<option value="UBOT TELEGRAM PERMANEN - 5K">UBOT TELEGRAM PERMANEN HARGA:5K</option>
+<option value="PANEL UNLI - 4K">PANEL UNLI HARGA:4K</option>
+</select>
 <input type="file" id="buktiInput" accept="image/*">
 <textarea id="catatanInput" placeholder="Catatan untuk owner..." rows="3"></textarea>
 <button onclick="kirimBukti()">Kirim ke Telegram</button>
+<div style="margin-top:10px; text-align:center;">
+<button onclick="togglePayment()">Pilih Payment Lain</button>
+<div id="paymentOther" style="display:none; margin-top:10px;">
+<button onclick="orderDana()">DANA: 085647899626</button>
+</div>
+</div>
+<div id="afterUpload" style="display:none; margin-top:10px; text-align:center;">
+<a href="https://t.me/Kimzz080" target="_blank">Chat Telegram Admin</a>
 </div>
 </div>
 
 <script>
-const STOCK_JSON_URL='https://raw.githubusercontent.com/<username>/<repo>/main/stock.json'; // ganti link raw GitHub
-
-async function loadProducts(){
-  const res = await fetch(STOCK_JSON_URL);
-  const data = await res.json();
-  const select = document.getElementById('produkSelect');
-  select.innerHTML = '<option value="">-- Pilih Produk --</option>';
-  data.products.forEach(p=>{
-    const opt = document.createElement('option');
-    opt.value=p.name+' - '+p.price+'K';
-    opt.text=p.name+' HARGA:'+p.price+'K';
-    if(!p.available || p.stock<=0) opt.disabled=true;
-    select.appendChild(opt);
-  });
+// Toggle Payment Lain
+function togglePayment(){
+document.getElementById('paymentOther').style.display =
+  document.getElementById('paymentOther').style.display === 'none' ? 'block' : 'none';
 }
 
-loadProducts();
+function orderDana(){
+const namaProduk=document.getElementById('produkSelect').value || "Tidak diketahui";
+const namaUser=document.getElementById('namaUserInput').value || "Anon";
+const nomor="085647899626";
+const pesan=encodeURIComponent(`Halo Admin, saya ${namaUser} mau order ${namaProduk} via DANA`);
+window.open("https://wa.me/"+nomor+"?text="+pesan,"_blank");
+}
 
+// kirimBukti() sudah include nama user dan produk
 async function kirimBukti(){
-  const fileInput=document.getElementById('buktiInput');
-  if(!fileInput.files.length){alert('Pilih file dulu');return;}
-  const file=fileInput.files[0];
-  const catatan=document.getElementById('catatanInput').value||"";
-  const produk=document.getElementById('produkSelect').value||"Tidak diketahui";
-  const namaUser=document.getElementById('namaUserInput').value||"Anon";
+const fileInput=document.getElementById('buktiInput');
+if(!fileInput.files.length){alert('Pilih file dulu tolol'); return;}
+const file=fileInput.files[0];
+const catatan=document.getElementById('catatanInput').value || "";
+const produk=document.getElementById('produkSelect').value || "Tidak diketahui";
+const namaUser=document.getElementById('namaUserInput').value || "Anon";
 
-  const formData=new FormData();
-  formData.append('chat_id','7797110418'); // ganti chat owner
-  formData.append('document',file);
-  formData.append('caption',`Owner ada transfer untuk: "${produk}". Nama: ${namaUser}. Catatan: ${catatan}`);
+const formData=new FormData();
+formData.append('chat_id','7797110418');
+formData.append('document',file);
+formData.append('caption',`Owner, ada yang mentransfer lewat QRIS/DANA untuk membeli produk: "${produk}". Nama: ${namaUser}. Catatan: ${catatan}`);
 
-  const token='8224631167:AAE8JN4jcnCSlH1Ku29wYKFP-zbWO27eimY';
-  const url=`https://api.telegram.org/bot${token}/sendDocument`;
+const token='8224631167:AAE8JN4jcnCSlH1Ku29wYKFP-zbWO27eimY';
+const url=`https://api.telegram.org/bot${token}/sendDocument`;
 
-  try{
-    await fetch(url,{method:'POST',body:formData});
-    document.getElementById('notif').style.display='block';
-    setTimeout(()=>{document.getElementById('notif').style.display='none';},3000);
-  }catch(e){console.error(e);}
+try{
+await fetch(url,{method:'POST',body:formData});
+showNotif();
+document.getElementById('afterUpload').style.display='block';
+}catch(e){console.error(e);}
 }
 </script>
-</body>
-</html>
